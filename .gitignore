@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/
+
+# Django
+*.log
+*.pot
+*.pyc
+*.mo
+*.sqlite3    # local DB (ignore in most cases)
+media/       # user-uploaded files (store outside git or use cloud)
+staticfiles/ # collected static files if you commit them via collectstatic
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+
+# IDEs / editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
