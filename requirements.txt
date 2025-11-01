@@ -5,7 +5,9 @@ django-environ==0.12.0
 djangorestframework==3.16.1
 djangorestframework_simplejwt==5.5.1
 pillow==11.3.0
-psycopg2-binary==2.9.10
+psycopg2-binary==2.9.11
 PyJWT==2.10.1
+setuptools==80.9.0
 sqlparse==0.5.3
 tzdata==2025.2
+wheel==0.45.1

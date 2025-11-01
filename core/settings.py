@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 ]
 
-EXTERNAL_APPS = ["user", "rest_framework"]
+EXTERNAL_APPS = ["user", "rest_framework", "graphene_django"]
 
 INSTALLED_APPS += EXTERNAL_APPS
 
