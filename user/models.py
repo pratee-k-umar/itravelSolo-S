@@ -1,6 +1,8 @@
 import uuid
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 # Create your models here.
 
@@ -24,8 +26,6 @@ class User(AbstractBaseUser, PermissionsMixin):
   first_name = models.CharField(max_length=255)
   last_name = models.CharField(max_length=255)
   email = models.EmailField(unique=True)
-  profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
-  last_seen = models.DateTimeField(null=True, blank=True)
   password = models.CharField(max_length=255)
   is_active = models.BooleanField(default=True)
   is_staff = models.BooleanField(default=False)
@@ -35,4 +35,27 @@ class User(AbstractBaseUser, PermissionsMixin):
   objects = UserManager()
   
   def __str__(self):
-    return self.emailp
+    return self.email
+
+class Profile(models.Model):
+  id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+  user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+  profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
+  bio = models.TextField(blank=True, null=True)
+  address = models.CharField(max_length=255, blank=True, null=True)
+  phone_number = models.CharField(max_length=20, blank=True, null=True)
+  profession = models.CharField(max_length=100, blank=True, null=True)
+  last_seen = models.DateTimeField(auto_now=True)
+  
+  def __str__(self):
+    return self.user.first_name + "'s Profile"
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+  if created:
+    Profile.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+  if hasattr(instance, 'profile'):
+    instance.profile.save()
