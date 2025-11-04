@@ -24,7 +24,6 @@ from user.schema import schema
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/auth/', include('user.urls')),
     path('graphql/', GraphQLView.as_view(graphiql=True, schema=schema))
 ]
 

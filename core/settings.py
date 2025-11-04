@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 ]
 
-EXTERNAL_APPS = ["user", "rest_framework", "graphene_django"]
+EXTERNAL_APPS = ["user", "graphene_django", "graphql_jwt"]
 
 INSTALLED_APPS += EXTERNAL_APPS
 
@@ -82,6 +82,10 @@ TEMPLATES = [
 WSGI_APPLICATION = "core.wsgi.application"
 
 AUTH_USER_MODEL = 'user.User'
+
+GRAPHENE = {
+    "SCHEMA": "user.schema.schema",
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -137,8 +141,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ]
-}
+AUTHENTICATION_BACKENDS = [
+    'graphql_jwt.backends.JSONWebTokenBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
