@@ -13,12 +13,15 @@ class UserManager(BaseUserManager):
     email = self.normalize_email(email)
     user = self.model(email=email, **extra_fields)
     user.set_password(password)
+    user.is_active = False
     user.save(using=self._db)
     return user
   
   def create_superuser(self, email, password=None, **extra_fields):
     extra_fields.set_default('is_staff', True)
     extra_fields.set_default('is_superuser', True)
+    extra_fields.set_default('is_active', True)
+    extra_fields.set_default('email_verified', True)
     return self.create_user(email, password, **extra_fields)
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -26,9 +29,13 @@ class User(AbstractBaseUser, PermissionsMixin):
   first_name = models.CharField(max_length=255)
   last_name = models.CharField(max_length=255)
   email = models.EmailField(unique=True)
+  email_verified = models.BooleanField(default=False)
   password = models.CharField(max_length=255)
-  is_active = models.BooleanField(default=True)
+  otp_secret = models.CharField(max_length=6, blank=True, null=True)
+  otp_created_at = models.DateTimeField(blank=True, null=True)
+  mfa_enabled = models.BooleanField(default=False)
   is_staff = models.BooleanField(default=False)
+  is_active = models.BooleanField(default=True)
   
   USERNAME_FIELD = 'email'
   
