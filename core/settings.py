@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 ]
 
-EXTERNAL_APPS = ["user", "graphene_django", "graphql_jwt"]
+EXTERNAL_APPS = ["user", "graphene_django", "graphql_jwt", "graphql_jwt.refresh_token"]
 
 INSTALLED_APPS += EXTERNAL_APPS
 

@@ -5,6 +5,8 @@ from .models import User, Profile
 from .utils import generate_otp, send_otp_email, valid_otp
 from django.utils import timezone
 from django.conf import settings
+from graphql_jwt.shortcuts import get_token, create_refresh_token
+from django.contrib.auth import authenticate
 
 class RegisterUserInput(graphene.InputObjectType):
   first_name = graphene.String(required=True)
@@ -138,8 +140,55 @@ class VerifyEmailOTP(graphene.Mutation):
     except Exception as e:
       return VerifyEmailOTP(success=False, message=f"An error occurred: {str(e)}", user=None)
 
+class LoginUser(graphene.Mutation):
+  class Arguments:
+    email = graphene.String(required=True)
+    password = graphene.String(required=True)
+  
+  success = graphene.Boolean()
+  message = graphene.String()
+  mfa_required = graphene.Boolean()
+  token = graphene.String()
+  refresh_token = graphene.String()
+  user = graphene.Field(UserType)
+  
+  @classmethod
+  def mutate(cls, root, info, email, password):
+    try:
+      user = User.objects.get(email=email)
+      
+      if not user.is_active:
+        return LoginUser(success=False, message='Account is not active. Please verify your email.', mfa_required=False, token=None, refresh_token=None, user=None)
+      
+      if not user.check_password(password):
+        return LoginUser(success=False, message='Invalid credentials.', mfa_required=False, token=None, refresh_token=None, user=None)
+      
+      if user.mfa_enabled:
+        otp = generate_otp()
+        user.otp_secret = otp
+        user.otp_created_at = timezone.now()
+        user.save()
+        
+        if send_otp_email(user, otp, subject="Your Two-factor OTP"):
+          return LoginUser(success=True, message='Two-factor OTP sent to your email.', mfa_required=True, token=None, refresh_token=None, user=None)
+        
+        else:
+          return LoginUser(success=False, message='Failed to send OTP email.', mfa_required=False, token=None, refresh_token=None, user=None)
+      
+      else:
+        token = get_token(user)
+        refresh_token = create_refresh_token(user)
+        
+        return LoginUser(success=True, message='Login successful.', mfa_required=False, token=token, refresh_token=refresh_token, user=user)
+    
+    except User.DoesNotExist:
+      return LoginUser(success=False, message='Invalid credentials.', mfa_required=False, token=None, refresh_token=None, user=None)
+    
+    except Exception as e:
+      return LoginUser(success=False, message=f'An error occurred: {str(e)}', mfa_required=False, token=None, refresh_token=None, user=None)
+
 class Mutation(graphene.ObjectType):
-  token_auth = graphql_jwt.ObtainJSONWebToken.Field()
+  login_user = LoginUser.Field()
   verify_token = graphql_jwt.Verify.Field()
   refresh_token = graphql_jwt.Refresh.Field()
   
