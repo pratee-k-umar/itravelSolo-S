@@ -52,6 +52,8 @@ class Profile(models.Model):
   address = models.CharField(max_length=255, blank=True, null=True)
   phone_number = models.CharField(max_length=20, blank=True, null=True)
   profession = models.CharField(max_length=100, blank=True, null=True)
+  gender = models.CharField(max_length=20, blank=True, null=True)
+  date_of_birth = models.DateField(blank=True, null=True)
   last_seen = models.DateTimeField(auto_now=True)
   
   def __str__(self):

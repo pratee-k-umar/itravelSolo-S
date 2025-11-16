@@ -19,7 +19,7 @@ class RegisterUserInput(graphene.InputObjectType):
 class ProfileType(DjangoObjectType):
   class Meta:
     model = Profile
-    fields = ('id', 'user', 'profile_image', 'bio', 'address', 'phone_number', 'profession', 'last_seen')
+    fields = ('id', 'user', 'profile_image', 'bio', 'address', 'phone_number', 'profession', 'gender', 'date_of_birth', 'last_seen')
 
 class UserType(DjangoObjectType):
   class Meta:
@@ -37,12 +37,9 @@ class Query(graphene.ObjectType):
   user_by_id = graphene.Field(UserType, id=graphene.UUID(required=True))
   me = graphene.Field(UserType)
   
-  # @login_required
+  @login_required
   def resolve_me(self, info):
-    user = info.context.user
-    if user and user.is_authenticated:
-      return user
-    return GraphQLError("Not authenticated")
+    return info.context.user
   
   def resolve_all_users(root, info):
     return User.objects.all()
