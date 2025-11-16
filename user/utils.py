@@ -42,3 +42,8 @@ def valid_otp(user, otp_input, expiration_min):
     return False, "OTP has expired. Please request a new one."
   
   return True, "OTP is valid."
+
+def get_email_from_payload_handler(payload):
+  """Extract email from JWT payload."""
+  
+  return payload.get('email') or payload.get("email_id") or payload.get("sub")

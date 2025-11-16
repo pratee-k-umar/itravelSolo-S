@@ -29,13 +29,12 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-u19o*3tqskw_&yq25g%i)sk5y(yc0)3cfi1qw=mmazd0g1@f-0"
+SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -85,6 +84,14 @@ AUTH_USER_MODEL = 'user.User'
 
 GRAPHENE = {
     "SCHEMA": "user.schema.schema",
+    "MIDDLEWARE": [
+        "graphql_jwt.middleware.JSONWebTokenMiddleware",
+    ],
+}
+
+GRAPHQL_JWT = {
+    "JWT_PAYLOAD_GET_USERNAME_HANDLER": "user.utils.get_email_from_payload_handler",
+    "JWT_AUTH_HEADER_PREFIX": "Bearer"
 }
 
 # Database
