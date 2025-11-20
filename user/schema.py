@@ -124,6 +124,8 @@ class VerifyEmailOTP(graphene.Mutation):
   
   success = graphene.Boolean()
   message = graphene.String()
+  token = graphene.String()
+  refresh_token = graphene.String()
   user = graphene.Field(UserType)
 
   @classmethod
@@ -144,7 +146,10 @@ class VerifyEmailOTP(graphene.Mutation):
       user.otp_created_at = None
       user.save()
       
-      return VerifyEmailOTP(success=True, message="Email verified successfully.", user=user)
+      token = get_token(user)
+      refresh_token = create_refresh_token(user)
+      
+      return VerifyEmailOTP(success=True, message="Email verified successfully.", user=user, token = token, refresh_token = refresh_token)
     
     except User.DoesNotExist:
       return VerifyEmailOTP(success=False, message="User with this email does not exist.", user=None)

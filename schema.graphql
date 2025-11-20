@@ -105,5 +105,7 @@ type RequestEmailVerificationOTP {
 type VerifyEmailOTP {
   success: Boolean
   message: String
+  token: String
+  refreshToken: String
   user: UserType
 }
