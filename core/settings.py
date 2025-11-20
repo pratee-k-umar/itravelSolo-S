@@ -34,7 +34,11 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+    '192.168.125.129'
+]
 
 # Application definition
 
@@ -152,6 +156,9 @@ AUTHENTICATION_BACKENDS = [
     'graphql_jwt.backends.JSONWebTokenBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
+
+OTP_EXPIRATION_MINUTES = env.int('OTP_EXPIRATION_MINUTES', default=10)
+OTP_COOLDOWN_SECONDS = env.int('OTP_COOLDOWN_SECONDS', default=60)
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = env('EMAIL_HOST', default='localhost')

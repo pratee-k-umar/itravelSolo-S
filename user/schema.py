@@ -69,6 +69,9 @@ class RegisterUser(graphene.Mutation):
         password=input.password
       )
       
+      if user.otp_created_at and (timezone.now() - user.otp_created_at).total_seconds() < settings.OTP_COOLDOWN_SECONDS:
+        return RegisterUser(user=None, success=False, message="Please wait before requesting a new OTP.", errors=["OTP request cooldown in effect."])
+      
       otp = generate_otp()
       user.otp_secret = otp
       user.otp_created_at = timezone.now()
@@ -95,6 +98,9 @@ class RequestEmailVerificationOTP(graphene.Mutation):
       user = User.objects.get(email=email)
       if user.email_verified:
         return RequestEmailVerificationOTP(success=False, message="Email is already verified.")
+      
+      if user.otp_created_at and (timezone.now() - user.otp_created_at).total_seconds() < settings.OTP_COOLDOWN_SECONDS:
+        return RequestEmailVerificationOTP(success=False, message="Please wait before requesting a new OTP.")
       
       otp = generate_otp()
       user.otp_secret = otp

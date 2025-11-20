@@ -1,0 +1,109 @@
+type Query {
+  allUser: [UserType]
+  userById(id: UUID!): UserType
+  me: UserType
+}
+
+type UserType {
+  id: UUID!
+  firstName: String!
+  lastName: String!
+  email: String!
+  emailVerified: Boolean!
+  mfaEnabled: Boolean!
+  isActive: Boolean!
+  profile: ProfileType
+}
+
+"""
+Leverages the internal Python implementation of UUID (uuid.UUID) to provide native UUID objects
+in fields, resolvers and input.
+"""
+scalar UUID
+
+type ProfileType {
+  id: UUID!
+  user: UserType!
+  profileImage: String
+  bio: String
+  address: String
+  phoneNumber: String
+  profession: String
+  gender: String
+  dateOfBirth: Date
+  lastSeen: DateTime!
+}
+
+"""
+The `Date` scalar type represents a Date
+value as specified by
+[iso8601](https://en.wikipedia.org/wiki/ISO_8601).
+"""
+scalar Date
+
+"""
+The `DateTime` scalar type represents a DateTime
+value as specified by
+[iso8601](https://en.wikipedia.org/wiki/ISO_8601).
+"""
+scalar DateTime
+
+type Mutation {
+  loginUser(email: String!, password: String!): LoginUser
+  verifyToken(token: String): Verify
+  refreshToken(token: String): Refresh
+  registerUser(input: RegisterUserInput!): RegisterUser
+  requestEmailVerificationOtp(email: String!): RequestEmailVerificationOTP
+  verifyEmailOtp(email: String!, otp: String!): VerifyEmailOTP
+}
+
+type LoginUser {
+  success: Boolean
+  message: String
+  mfaRequired: Boolean
+  token: String
+  refreshToken: String
+  user: UserType
+}
+
+type Verify {
+  payload: GenericScalar!
+}
+
+"""
+The `GenericScalar` scalar type represents a generic
+GraphQL scalar value that could be:
+String, Boolean, Int, Float, List or Object.
+"""
+scalar GenericScalar
+
+type Refresh {
+  payload: GenericScalar!
+  refreshExpiresIn: Int!
+  token: String!
+}
+
+type RegisterUser {
+  user: UserType
+  success: Boolean
+  message: String
+  errors: [String]
+}
+
+input RegisterUserInput {
+  firstName: String!
+  lastName: String!
+  email: String!
+  password: String!
+}
+
+type RequestEmailVerificationOTP {
+  success: Boolean
+  message: String
+}
+
+type VerifyEmailOTP {
+  success: Boolean
+  message: String
+  user: UserType
+}
