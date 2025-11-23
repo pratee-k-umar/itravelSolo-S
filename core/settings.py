@@ -37,7 +37,8 @@ DEBUG = True
 ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
-    '192.168.125.129'
+    '192.168.125.129',
+    '10.0.2.2'
 ]
 
 # Application definition
@@ -51,7 +52,13 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 ]
 
-EXTERNAL_APPS = ["user", "graphene_django", "graphql_jwt", "graphql_jwt.refresh_token"]
+EXTERNAL_APPS = [
+    "user",
+    "travel",
+    "graphene_django",
+    "graphql_jwt",
+    "graphql_jwt.refresh_token"
+]
 
 INSTALLED_APPS += EXTERNAL_APPS
 
