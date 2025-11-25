@@ -2,6 +2,7 @@ type Query {
   allUser: [UserType]
   userById(id: UUID!): UserType
   me: UserType
+  profile: ProfileType
 }
 
 type UserType {

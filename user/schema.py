@@ -36,10 +36,15 @@ class Query(graphene.ObjectType):
   all_user = graphene.List(UserType)
   user_by_id = graphene.Field(UserType, id=graphene.UUID(required=True))
   me = graphene.Field(UserType)
+  profile = graphene.Field(ProfileType)
   
   @login_required
   def resolve_me(self, info):
     return info.context.user
+  
+  @login_required
+  def resolve_profile(self, info):
+    return info.context.user.profile
   
   def resolve_all_users(root, info):
     return User.objects.all()

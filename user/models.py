@@ -1,4 +1,5 @@
 import uuid
+from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from django.db.models.signals import post_save
@@ -68,3 +69,18 @@ def create_user_profile(sender, instance, created, **kwargs):
 def save_user_profile(sender, instance, **kwargs):
   if hasattr(instance, 'profile'):
     instance.profile.save()
+
+class Social(models.Model):
+  id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+  user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='social')
+  friends = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='friends')
+  trips_count = models.PositiveIntegerField(default=0)
+  places_visited = models.PositiveIntegerField(default=0)
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+  
+  def __str__(self):
+    return f"{self.user.first_name}'s Social Data"
+  
+  class Meta:
+    verbose_name_plural = "Social Info"

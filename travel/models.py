@@ -10,7 +10,7 @@ class Trip(models.Model):
   origin = models.CharField(max_length=255)
   destination = models.CharField(max_length=255)
   route_polyline = models.TextField(blank=True, null=True)
-  friends = models.PositiveIntegerField(default=0)
+  companions = models.PositiveIntegerField(default=0)
   updated_at = models.DateTimeField(auto_now=True)
   created_at = models.DateTimeField(auto_now_add=True)
   
@@ -18,4 +18,4 @@ class Trip(models.Model):
     return f"{self.owner.first_name}'s trip from {self.origin} to {self.destination}"
   
   class Meta:
-    ordering = ['-start-date']
+    ordering = ['-created_at']
