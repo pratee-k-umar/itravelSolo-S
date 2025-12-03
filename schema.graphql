@@ -56,6 +56,7 @@ type Mutation {
   registerUser(input: RegisterUserInput!): RegisterUser
   requestEmailVerificationOtp(email: String!): RequestEmailVerificationOTP
   verifyEmailOtp(email: String!, otp: String!): VerifyEmailOTP
+  updateLocation(latitude: Decimal!, longitude: Decimal!, showLocation: Boolean!): UpdateLocation
 }
 
 type LoginUser {
@@ -110,3 +111,12 @@ type VerifyEmailOTP {
   refreshToken: String
   user: UserType
 }
+
+type UpdateLocation {
+  success: Boolean
+  message: String
+  profile: ProfileType
+}
+
+"""The `Decimal` scalar type represents a python Decimal."""
+scalar Decimal

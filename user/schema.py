@@ -277,6 +277,42 @@ class Disable_MFA(graphene.Mutation):
     
     user.mfa_enabled = False
 
+class UpdateLocation(graphene.Mutation):
+  class Arguments:
+    latitude = graphene.Decimal(required=True)
+    longitude = graphene.Decimal(required=True)
+    show_location = graphene.Boolean(required=True)
+  
+  success = graphene.Boolean()
+  message = graphene.String()
+  profile = graphene.Field(lambda: ProfileType)
+  
+  @login_required
+  def mutate(cls, info, latitude=None, longitude=None, show_location=None):
+    user = info.context.user
+    try:
+      profile = user.profile
+      
+      updated = False
+      if latitude is not None:
+        profile.latitude = latitude
+        profile.longitude = longitude
+        updated = True
+      
+      if show_location is not None:
+        profile.show_location = show_location
+        updated = True
+      
+      if updated:
+        profile.save()
+      
+      return UpdateLocation(success=True, message="Location updated successfully.", profile=profile)
+    
+    except Profile.DoesNotExist:
+      profile = Profile(user=user)
+      success = False
+      profile = None
+
 class Mutation(graphene.ObjectType):
   login_user = LoginUser.Field()
   verify_token = graphql_jwt.Verify.Field()
@@ -285,5 +321,6 @@ class Mutation(graphene.ObjectType):
   register_user = RegisterUser.Field()
   request_email_verification_otp = RequestEmailVerificationOTP.Field()
   verify_email_otp = VerifyEmailOTP.Field()
+  updateLocation = UpdateLocation.Field()
 
 schema = graphene.Schema(query=Query, mutation=Mutation)

@@ -48,6 +48,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Profile(models.Model):
   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
   user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+  latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
+  longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
+  last_location_update = models.DateTimeField(auto_now=True, blank=True, null=True)  
+  show_location = models.BooleanField(default=True)
   profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
   bio = models.TextField(blank=True, null=True)
   address = models.CharField(max_length=255, blank=True, null=True)

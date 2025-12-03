@@ -38,3 +38,5 @@ staticfiles/ # collected static files if you commit them via collectstatic
 # OS files
 .DS_Store
 Thumbs.db
+
+PROGRESS_SUMMARY.md
