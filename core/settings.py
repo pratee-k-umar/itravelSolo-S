@@ -35,10 +35,9 @@ SECRET_KEY = env("SECRET_KEY")
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '127.0.0.1',
-    'localhost',
-    '192.168.108.129',
-    '10.0.2.2'
+    env('HOST_IP_1'),
+    env('HOST_IP_2'),
+    env('HOST_IP_3'),
 ]
 
 # Application definition
@@ -55,6 +54,7 @@ INSTALLED_APPS = [
 EXTERNAL_APPS = [
     "user",
     "travel",
+    "insights",
     "graphene_django",
     "graphql_jwt",
     "graphql_jwt.refresh_token"
