@@ -94,7 +94,7 @@ WSGI_APPLICATION = "core.wsgi.application"
 AUTH_USER_MODEL = 'user.User'
 
 GRAPHENE = {
-    "SCHEMA": "user.schema.schema",
+    "SCHEMA": "core.schema.schema",
     "MIDDLEWARE": [
         "graphql_jwt.middleware.JSONWebTokenMiddleware",
     ],
@@ -174,6 +174,7 @@ EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=False)
 EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='')
+OTP_EXPIRATION_MINUTES = env.int('OTP_EXPIRATION_MINUTES', default=10)
 SERVER_EMAIL = env('SERVER_EMAIL', default='')
 
-OTP_EXPIRATION_MINUTES = env.int('OTP_EXPIRATION_MINUTES', default=10)
+GEMINI_API_KEY = env("GEMINI_API_KEY")
