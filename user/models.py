@@ -47,7 +47,11 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class Profile(models.Model):
   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-  user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+  user = models.OneToOneField(
+    settings.AUTH_USER_MODEL,
+    on_delete=models.CASCADE,
+    related_name='profile'
+  )
   latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
   longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
   last_location_update = models.DateTimeField(auto_now=True, blank=True, null=True)  
@@ -76,7 +80,11 @@ def save_user_profile(sender, instance, **kwargs):
 
 class Social(models.Model):
   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-  user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='social')
+  user = models.OneToOneField(
+    settings.AUTH_USER_MODEL,
+    on_delete=models.CASCADE,
+    related_name='social'
+  )
   friends = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='friends')
   trips_count = models.PositiveIntegerField(default=0)
   places_visited = models.PositiveIntegerField(default=0)

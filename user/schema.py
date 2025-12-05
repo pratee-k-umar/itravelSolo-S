@@ -322,5 +322,3 @@ class Mutation(graphene.ObjectType):
   request_email_verification_otp = RequestEmailVerificationOTP.Field()
   verify_email_otp = VerifyEmailOTP.Field()
   updateLocation = UpdateLocation.Field()
-
-schema = graphene.Schema(query=Query, mutation=Mutation)
