@@ -15,9 +15,7 @@ import dj_database_url
 import environ
 import os
 
-env = environ.Env(
-    DEBUG=(bool, False)
-)
+env = environ.Env(DEBUG=(bool, False))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -35,9 +33,9 @@ SECRET_KEY = env("SECRET_KEY")
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    env('HOST_IP_1'),
-    env('HOST_IP_2'),
-    env('HOST_IP_3'),
+    env("HOST_IP_1"),
+    env("HOST_IP_2"),
+    env("HOST_IP_3"),
 ]
 
 # Application definition
@@ -57,7 +55,7 @@ EXTERNAL_APPS = [
     "insights",
     "graphene_django",
     "graphql_jwt",
-    "graphql_jwt.refresh_token"
+    "graphql_jwt.refresh_token",
 ]
 
 INSTALLED_APPS += EXTERNAL_APPS
@@ -91,7 +89,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "core.wsgi.application"
 
-AUTH_USER_MODEL = 'user.User'
+AUTH_USER_MODEL = "user.User"
 
 GRAPHENE = {
     "SCHEMA": "core.schema.schema",
@@ -102,7 +100,7 @@ GRAPHENE = {
 
 GRAPHQL_JWT = {
     "JWT_PAYLOAD_GET_USERNAME_HANDLER": "user.utils.get_email_from_payload_handler",
-    "JWT_AUTH_HEADER_PREFIX": "Bearer"
+    "JWT_AUTH_HEADER_PREFIX": "Bearer",
 }
 
 # Database
@@ -151,8 +149,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -160,21 +158,24 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTHENTICATION_BACKENDS = [
-    'graphql_jwt.backends.JSONWebTokenBackend',
-    'django.contrib.auth.backends.ModelBackend',
+    "graphql_jwt.backends.JSONWebTokenBackend",
+    "django.contrib.auth.backends.ModelBackend",
 ]
 
-OTP_EXPIRATION_MINUTES = env.int('OTP_EXPIRATION_MINUTES', default=10)
-OTP_COOLDOWN_SECONDS = env.int('OTP_COOLDOWN_SECONDS', default=60)
+GDAL_LIBRARY_PATH = "C:/Users/prate/AppData/Local/Programs/OSGeo4W/bin/gdal312.dll"
+GEOS_LIBRARY_PATH = "C:/Users/prate/AppData/Local/Programs/OSGeo4W/bin/geos_c.dll"
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = env('EMAIL_HOST', default='localhost')
-EMAIL_PORT = env('EMAIL_PORT', default=25)
-EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=False)
-EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='')
-OTP_EXPIRATION_MINUTES = env.int('OTP_EXPIRATION_MINUTES', default=10)
-SERVER_EMAIL = env('SERVER_EMAIL', default='')
+OTP_EXPIRATION_MINUTES = env.int("OTP_EXPIRATION_MINUTES", default=10)
+OTP_COOLDOWN_SECONDS = env.int("OTP_COOLDOWN_SECONDS", default=60)
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = env("EMAIL_HOST", default="localhost")
+EMAIL_PORT = env("EMAIL_PORT", default=25)
+EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=False)
+EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="")
+OTP_EXPIRATION_MINUTES = env.int("OTP_EXPIRATION_MINUTES", default=10)
+SERVER_EMAIL = env("SERVER_EMAIL", default="")
 
 GEMINI_API_KEY = env("GEMINI_API_KEY")
