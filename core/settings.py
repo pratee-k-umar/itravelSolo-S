@@ -18,7 +18,7 @@ import os
 env = environ.Env(DEBUG=(bool, False))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
@@ -165,17 +165,17 @@ AUTHENTICATION_BACKENDS = [
 GDAL_LIBRARY_PATH = "C:/Users/prate/AppData/Local/Programs/OSGeo4W/bin/gdal312.dll"
 GEOS_LIBRARY_PATH = "C:/Users/prate/AppData/Local/Programs/OSGeo4W/bin/geos_c.dll"
 
-OTP_EXPIRATION_MINUTES = env.int("OTP_EXPIRATION_MINUTES", default=10)
-OTP_COOLDOWN_SECONDS = env.int("OTP_COOLDOWN_SECONDS", default=60)
+OTP_EXPIRATION_MINUTES = env.int("OTP_EXPIRATION_MINUTES")
+OTP_COOLDOWN_SECONDS = env.int("OTP_COOLDOWN_SECONDS")
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = env("EMAIL_HOST", default="localhost")
-EMAIL_PORT = env("EMAIL_PORT", default=25)
-EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=False)
-EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
-EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
-DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="")
-OTP_EXPIRATION_MINUTES = env.int("OTP_EXPIRATION_MINUTES", default=10)
-SERVER_EMAIL = env("SERVER_EMAIL", default="")
+EMAIL_HOST = env("EMAIL_HOST")
+EMAIL_PORT = env("EMAIL_PORT")
+EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS")
+EMAIL_HOST_USER = env("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL")
+OTP_EXPIRATION_MINUTES = env.int("OTP_EXPIRATION_MINUTES")
+SERVER_EMAIL = env("SERVER_EMAIL")
 
 GEMINI_API_KEY = env("GEMINI_API_KEY")
