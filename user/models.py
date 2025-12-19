@@ -100,7 +100,7 @@ class Social(models.Model):
     friends = models.ManyToManyField(
         settings.AUTH_USER_MODEL, blank=True, related_name="friends"
     )
-    trips_count = models.PositiveIntegerField(default=0)
+    adventures = models.PositiveIntegerField(default=0)
     places_visited = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
