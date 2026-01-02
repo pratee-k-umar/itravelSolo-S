@@ -1,13 +1,17 @@
-from datetime import timezone
-
 import graphene
 from django.conf import settings
+from django.utils import timezone
 from graphene_django import DjangoObjectType
 from graphql_jwt.decorators import login_required
-
+from graphql_jwt.shortcuts import create_refresh_token, get_token
 from user.models import Profile, User
 from user.utils import generate_otp, send_otp_email, valid_otp
-from graphql_jwt.shortcuts import create_refresh_token, get_token
+from user.validators import (
+    sanitize_input,
+    validate_email,
+    validate_name,
+    validate_password,
+)
 
 
 class RegisterUserInput(graphene.InputObjectType):
@@ -20,20 +24,16 @@ class RegisterUserInput(graphene.InputObjectType):
 class UserType(DjangoObjectType):
     class Meta:
         model = User
-        fields = (
-            "id",
-            "first_name",
-            "last_name",
-            "email",
-            "profile",
-            "email_verified",
-            "mfa_enabled",
-            "is_active",
+        exclude = (
+            "password",
+            "otp_secret",
+            "otp_created_at",
+            "is_staff",
         )
 
-    def resolve_profile(self, root, info):
+    def resolve_profile(self, info):
         try:
-            return root.profile
+            return self.profile
         except Profile.DoesNotExist:
             return None
 
@@ -50,10 +50,63 @@ class RegisterUser(graphene.Mutation):
     @classmethod
     def mutate(cls, root, info, input):
         try:
+            # Sanitize and validate inputs
+            email = sanitize_input(input.email).lower()
+            first_name = sanitize_input(input.first_name)
+            last_name = sanitize_input(input.last_name)
+
+            # Validate email
+            is_valid_email, email_error = validate_email(email)
+            if not is_valid_email:
+                return RegisterUser(
+                    user=None,
+                    success=False,
+                    message=email_error,
+                    errors=[email_error],
+                )
+
+            # Validate names
+            is_valid_first, first_error = validate_name(first_name, "First name")
+            if not is_valid_first:
+                return RegisterUser(
+                    user=None,
+                    success=False,
+                    message=first_error,
+                    errors=[first_error],
+                )
+
+            is_valid_last, last_error = validate_name(last_name, "Last name")
+            if not is_valid_last:
+                return RegisterUser(
+                    user=None,
+                    success=False,
+                    message=last_error,
+                    errors=[last_error],
+                )
+
+            # Validate password
+            is_valid_pwd, pwd_error = validate_password(input.password)
+            if not is_valid_pwd:
+                return RegisterUser(
+                    user=None,
+                    success=False,
+                    message=pwd_error,
+                    errors=[pwd_error],
+                )
+
+            # Check if user already exists
+            if User.objects.filter(email=email).exists():
+                return RegisterUser(
+                    user=None,
+                    success=False,
+                    message="User with this email already exists.",
+                    errors=["Email already registered."],
+                )
+
             user = User.objects.create_user(
-                first_name=input.first_name,
-                last_name=input.last_name,
-                email=input.email,
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
                 password=input.password,
             )
 
@@ -335,11 +388,6 @@ class Enable_MFA(graphene.Mutation):
                 success=False, message="MFA is already enabled.", user=user
             )
 
-        if user.mfa_enabled:
-            return Enable_MFA(
-                success=False, message="MFA is already enabled.", user=user
-            )
-
         is_valid, message = valid_otp(user, otp, settings.OTP_EXPIRATION_MINUTES)
 
         if not is_valid:
@@ -365,3 +413,136 @@ class Disable_MFA(graphene.Mutation):
             return Disable_MFA(success=False, message="MFA is not enabled.", user=user)
 
         user.mfa_enabled = False
+        user.otp_secret = None
+        user.otp_created_at = None
+        user.save()
+        return Disable_MFA(
+            success=True, message="MFA disabled successfully.", user=user
+        )
+
+
+class VerifyMFAOTP(graphene.Mutation):
+    """Verify MFA OTP during login when MFA is enabled."""
+
+    class Arguments:
+        email = graphene.String(required=True)
+        otp = graphene.String(required=True)
+
+    success = graphene.Boolean()
+    message = graphene.String()
+    token = graphene.String()
+    refresh_token = graphene.String()
+    user = graphene.Field(UserType)
+
+    @classmethod
+    def mutate(cls, root, info, email, otp):
+        try:
+            user = User.objects.get(email=email)
+
+            if not user.is_active:
+                return VerifyMFAOTP(
+                    success=False,
+                    message="Account is not active.",
+                    token=None,
+                    refresh_token=None,
+                    user=None,
+                )
+
+            if not user.mfa_enabled:
+                return VerifyMFAOTP(
+                    success=False,
+                    message="MFA is not enabled for this account.",
+                    token=None,
+                    refresh_token=None,
+                    user=None,
+                )
+
+            is_valid, message = valid_otp(user, otp, settings.OTP_EXPIRATION_MINUTES)
+
+            if not is_valid:
+                return VerifyMFAOTP(
+                    success=False,
+                    message=message,
+                    token=None,
+                    refresh_token=None,
+                    user=None,
+                )
+
+            # Clear OTP after successful verification
+            user.otp_secret = None
+            user.otp_created_at = None
+            user.save()
+
+            # Generate tokens
+            token = get_token(user)
+            refresh_token = create_refresh_token(user)
+
+            return VerifyMFAOTP(
+                success=True,
+                message="MFA verification successful.",
+                token=token,
+                refresh_token=refresh_token,
+                user=user,
+            )
+
+        except User.DoesNotExist:
+            return VerifyMFAOTP(
+                success=False,
+                message="Invalid credentials.",
+                token=None,
+                refresh_token=None,
+                user=None,
+            )
+
+        except Exception as e:
+            return VerifyMFAOTP(
+                success=False,
+                message=f"An error occurred: {str(e)}",
+                token=None,
+                refresh_token=None,
+                user=None,
+            )
+
+
+class RequestMFAEnableOTP(graphene.Mutation):
+    """Request OTP to enable MFA for the authenticated user."""
+
+    success = graphene.Boolean()
+    message = graphene.String()
+
+    @classmethod
+    @login_required
+    def mutate(cls, root, info):
+        user = info.context.user
+
+        if not user.email_verified:
+            return RequestMFAEnableOTP(
+                success=False, message="Email must be verified before enabling MFA."
+            )
+
+        if user.mfa_enabled:
+            return RequestMFAEnableOTP(success=False, message="MFA is already enabled.")
+
+        # Check cooldown
+        if (
+            user.otp_created_at
+            and (timezone.now() - user.otp_created_at).total_seconds()
+            < settings.OTP_COOLDOWN_SECONDS
+        ):
+            return RequestMFAEnableOTP(
+                success=False, message="Please wait before requesting a new OTP."
+            )
+
+        otp = generate_otp()
+        user.otp_secret = otp
+        user.otp_created_at = timezone.now()
+        user.save()
+
+        if send_otp_email(user, otp, subject="Enable Two-Factor Authentication"):
+            return RequestMFAEnableOTP(
+                success=True, message="OTP sent to your email to enable MFA."
+            )
+        else:
+            return RequestMFAEnableOTP(
+                success=False, message="Failed to send OTP email."
+            )

@@ -1,14 +1,27 @@
 import graphene
 import graphql_jwt
 from graphql_jwt.decorators import login_required
-
-from .schemas.social_link_schema import SocialLinkType
-
-from .schemas.profile_schema import ProfileType, UpdateLocation
 from user.schemas.social_schema import SocialType
-from user.schemas.user_schema import LoginUser, RegisterUser, RequestEmailVerificationOTP, UserType, VerifyEmailOTP
+from user.schemas.user_schema import (
+    Disable_MFA,
+    Enable_MFA,
+    LoginUser,
+    RegisterUser,
+    RequestEmailVerificationOTP,
+    RequestMFAEnableOTP,
+    UserType,
+    VerifyEmailOTP,
+    VerifyMFAOTP,
+)
 
 from .models import User
+from .schemas.profile_schema import (
+    CreateProfile,
+    ProfileType,
+    UpdateLocation,
+    UpdateProfile,
+)
+from .schemas.social_link_schema import SocialLinkType
 
 
 class Query(graphene.ObjectType):
@@ -27,6 +40,14 @@ class Query(graphene.ObjectType):
     def resolve_profile(self, info):
         return info.context.user.profile
 
+    @login_required
+    def resolve_social(self, info):
+        return info.context.user.social
+
+    @login_required
+    def resolve_social_links(self, info):
+        return info.context.user.social_links.all()
+
     def resolve_all_users(self, info):
         return User.objects.all()
 
@@ -38,11 +59,25 @@ class Query(graphene.ObjectType):
 
 
 class Mutation(graphene.ObjectType):
-    login_user = LoginUser.Field()
+    # JWT Token Management
     verify_token = graphql_jwt.Verify.Field()
     refresh_token = graphql_jwt.Refresh.Field()
 
+    # Authentication
+    login_user = LoginUser.Field()
     register_user = RegisterUser.Field()
+
+    # Email Verification
     request_email_verification_otp = RequestEmailVerificationOTP.Field()
     verify_email_otp = VerifyEmailOTP.Field()
-    updateLocation = UpdateLocation.Field()
+
+    # MFA Management
+    verify_mfa_otp = VerifyMFAOTP.Field()
+    request_mfa_enable_otp = RequestMFAEnableOTP.Field()
+    enable_mfa = Enable_MFA.Field()
+    disable_mfa = Disable_MFA.Field()
+
+    # Profile Mutations
+    create_profile = CreateProfile.Field()
+    update_profile = UpdateProfile.Field()
+    update_location = UpdateLocation.Field()
