@@ -141,6 +141,7 @@ class Social(models.Model):
         settings.AUTH_USER_MODEL, blank=True, related_name="friends"
     )
     adventures = models.PositiveIntegerField(default=0)
+    favorites = models.PositiveIntegerField(default=0)
     places_visited = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -151,6 +152,26 @@ class Social(models.Model):
     class Meta:
         verbose_name_plural = "Social Info"
 
+
+class Favorite(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="favorites"
+    )
+    name = models.CharField(max_length=255)
+    location = models.CharField(max_length=255)
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "name", "location")
+        indexes = [
+            models.Index(fields=["user", "name"]),
+        ]
+        verbose_name = "Favorite"
+        verbose_name_plural = "Favorites"
+
+    def __str__(self):
+        return f"{self.user.email} → {self.name}"
 
 class SocialLink(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
