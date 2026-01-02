@@ -21,8 +21,7 @@ class ProfileCRUDType(graphene.InputObjectType):
     phone_number = graphene.String()
     profession = graphene.String()
     gender = graphene.String()
-    date_of_birth = graphene.String()
-    last_seen = graphene.String()
+    date_of_birth = graphene.Date()
 
 
 class CreateProfile(graphene.Mutation):
