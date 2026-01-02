@@ -1,8 +1,8 @@
 import graphene
 import graphql_jwt
 from graphql_jwt.decorators import login_required
-from user.schemas.social_schema import SocialType
-from user.schemas.user_schema import (
+from user.graphql.social_schema import SocialType
+from user.graphql.user_schema import (
     Disable_MFA,
     Enable_MFA,
     LoginUser,
@@ -15,13 +15,13 @@ from user.schemas.user_schema import (
 )
 
 from .models import User
-from .schemas.profile_schema import (
+from .graphql.profile_schema import (
     CreateProfile,
     ProfileType,
     UpdateLocation,
     UpdateProfile,
 )
-from .schemas.social_link_schema import SocialLinkType
+from .graphql.social_link_schema import SocialLinkType
 
 
 class Query(graphene.ObjectType):
