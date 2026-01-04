@@ -1,19 +1,25 @@
 type Query {
+  placeInfo(city: String!, state: String, country: String!): PlaceInsightsType
+  completePlaceData(city: String!, state: String, country: String!): CompletePlaceDataType
   allUser: [UserType]
   userById(id: UUID!): UserType
   me: UserType
   profile: ProfileType
+  social: SocialType
+  socialLinks: [SocialLinkType]
 }
 
-type UserType {
+type PlaceInsightsType {
   id: UUID!
-  firstName: String!
-  lastName: String!
-  email: String!
-  emailVerified: Boolean!
-  mfaEnabled: Boolean!
-  isActive: Boolean!
-  profile: ProfileType
+  place: PlaceType!
+  mainQuote: String!
+  subQuote: String!
+  description: String!
+  isStale: Boolean!
+  lastUpdated: DateTime!
+  expiresAt: DateTime!
+  lastRequested: DateTime
+  version: Int!
 }
 
 """
@@ -22,9 +28,172 @@ in fields, resolvers and input.
 """
 scalar UUID
 
+type PlaceType {
+  id: UUID!
+  city: String!
+  state: String!
+  country: String!
+  latitude: Float
+  longitude: Float
+  image: String!
+
+  """Hex color code representing city's theme (e.g., #3B82F6 for blue)"""
+  themeColor: String!
+
+  """
+  Visual keywords for image search: sunset, mountains, modern, historic, etc.
+  """
+  visualTags: String!
+  createdAt: DateTime!
+  insight: PlaceInsightsType
+  famousPlaces: [MostFamousPlaceType!]!
+  notablePlaces: [FamousPlaceType!]!
+  notableActivities: [FamousActivityType!]!
+  seasonalInsights: [SeasonalInsightsType!]!
+  trapAreas: [TouristTrapType!]!
+  foodSpecialties: [FoodSpecialtyType!]!
+  hiddenGems: [HiddenGemType!]!
+  dayActivities: [DayActivityType!]!
+  thingsToDo: [ThingToDoType!]!
+}
+
+"""
+The `DateTime` scalar type represents a DateTime
+value as specified by
+[iso8601](https://en.wikipedia.org/wiki/ISO_8601).
+"""
+scalar DateTime
+
+type MostFamousPlaceType {
+  id: UUID!
+  place: PlaceType!
+  name: String!
+  quote: String!
+  latitude: Float!
+  longitude: Float!
+  image: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type FamousPlaceType {
+  id: UUID!
+  place: PlaceType!
+  name: String!
+  quote: String!
+  latitude: Float!
+  longitude: Float!
+  image: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type FamousActivityType {
+  id: UUID!
+  place: PlaceType!
+  name: String!
+  time: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type SeasonalInsightsType {
+  id: UUID!
+  place: PlaceType!
+  season: String!
+  description: String!
+  recommendedActivities: [String!]!
+  cautions: [String!]!
+  createdAt: DateTime!
+}
+
+type TouristTrapType {
+  id: UUID!
+  place: PlaceType!
+  name: String!
+  latitude: Float!
+  longitude: Float!
+  reason: String!
+  createdAt: DateTime!
+}
+
+type FoodSpecialtyType {
+  id: UUID!
+  place: PlaceType!
+  name: String!
+  description: String
+  createdAt: DateTime!
+}
+
+type HiddenGemType {
+  id: UUID!
+  place: PlaceType!
+  name: String!
+  description: String!
+  latitude: Float
+  longitude: Float
+  createdAt: DateTime!
+}
+
+type DayActivityType {
+  id: UUID!
+  place: PlaceType!
+  activity: String!
+  dayTime: String!
+  time: String!
+  createdAt: DateTime!
+}
+
+type ThingToDoType {
+  id: UUID!
+  place: PlaceType!
+  activityType: String!
+  location: String!
+  time: String
+  latitude: Float
+  longitude: Float
+  createdAt: DateTime!
+}
+
+"""Complete place data including all related information"""
+type CompletePlaceDataType {
+  place: PlaceType
+  insights: PlaceInsightsType
+  mostFamousPlace: MostFamousPlaceType
+  famousPlaces: [FamousPlaceType]
+  famousActivities: [FamousActivityType]
+  dayActivities: [DayActivityType]
+  thingsToDo: [ThingToDoType]
+  seasonalInsights: [SeasonalInsightsType]
+  touristTraps: [TouristTrapType]
+  foodSpecialties: [FoodSpecialtyType]
+  hiddenGems: [HiddenGemType]
+}
+
+type UserType {
+  lastLogin: DateTime
+
+  """
+  Designates that this user has all permissions without explicitly assigning them.
+  """
+  isSuperuser: Boolean!
+  id: UUID!
+  firstName: String!
+  lastName: String!
+  email: String!
+  emailVerified: Boolean!
+  mfaEnabled: Boolean!
+  isActive: Boolean!
+  profile: ProfileType
+  social: SocialType
+  friends: [SocialType!]!
+  socialLinks: [SocialLinkType!]!
+}
+
 type ProfileType {
   id: UUID!
-  user: UserType!
+  lastLocationUpdate: DateTime
+  showLocation: Boolean!
   profileImage: String
   bio: String
   address: String
@@ -42,30 +211,37 @@ value as specified by
 """
 scalar Date
 
-"""
-The `DateTime` scalar type represents a DateTime
-value as specified by
-[iso8601](https://en.wikipedia.org/wiki/ISO_8601).
-"""
-scalar DateTime
+type SocialType {
+  id: UUID!
+  friends: [UserType!]!
+  adventures: Int!
+  placesVisited: Int!
+}
+
+type SocialLinkType {
+  id: UUID!
+  platform: String!
+  url: String!
+}
 
 type Mutation {
-  loginUser(email: String!, password: String!): LoginUser
   verifyToken(token: String): Verify
   refreshToken(token: String): Refresh
+  loginUser(email: String!, password: String!): LoginUser
   registerUser(input: RegisterUserInput!): RegisterUser
   requestEmailVerificationOtp(email: String!): RequestEmailVerificationOTP
   verifyEmailOtp(email: String!, otp: String!): VerifyEmailOTP
-  updateLocation(latitude: Decimal!, longitude: Decimal!, showLocation: Boolean!): UpdateLocation
-}
 
-type LoginUser {
-  success: Boolean
-  message: String
-  mfaRequired: Boolean
-  token: String
-  refreshToken: String
-  user: UserType
+  """Verify MFA OTP during login when MFA is enabled."""
+  verifyMfaOtp(email: String!, otp: String!): VerifyMFAOTP
+
+  """Request OTP to enable MFA for the authenticated user."""
+  requestMfaEnableOtp: RequestMFAEnableOTP
+  enableMfa(otp: String!): Enable_MFA
+  disableMfa: Disable_MFA
+  createProfile(input: ProfileCRUDType!): CreateProfile
+  updateProfile(input: ProfileCRUDType!): UpdateProfile
+  updateLocation(latitude: Decimal!, longitude: Decimal!, showLocation: Boolean!): UpdateLocation
 }
 
 type Verify {
@@ -83,6 +259,15 @@ type Refresh {
   payload: GenericScalar!
   refreshExpiresIn: Int!
   token: String!
+}
+
+type LoginUser {
+  success: Boolean
+  message: String
+  mfaRequired: Boolean
+  token: String
+  refreshToken: String
+  user: UserType
 }
 
 type RegisterUser {
@@ -110,6 +295,55 @@ type VerifyEmailOTP {
   token: String
   refreshToken: String
   user: UserType
+}
+
+"""Verify MFA OTP during login when MFA is enabled."""
+type VerifyMFAOTP {
+  success: Boolean
+  message: String
+  token: String
+  refreshToken: String
+  user: UserType
+}
+
+"""Request OTP to enable MFA for the authenticated user."""
+type RequestMFAEnableOTP {
+  success: Boolean
+  message: String
+}
+
+type Enable_MFA {
+  success: Boolean
+  message: String
+  user: UserType
+}
+
+type Disable_MFA {
+  success: Boolean
+  message: String
+  user: UserType
+}
+
+type CreateProfile {
+  success: Boolean
+  message: String
+  profile: ProfileType
+}
+
+input ProfileCRUDType {
+  profileImage: String
+  bio: String
+  address: String
+  phoneNumber: String
+  profession: String
+  gender: String
+  dateOfBirth: Date
+}
+
+type UpdateProfile {
+  success: Boolean
+  message: String
+  profile: ProfileType
 }
 
 type UpdateLocation {

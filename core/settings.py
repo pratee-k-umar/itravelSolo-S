@@ -10,10 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
+
 import dj_database_url
 import environ
-import os
 
 env = environ.Env(DEBUG=(bool, False))
 
@@ -56,6 +57,8 @@ EXTERNAL_APPS = [
     "graphene_django",
     "graphql_jwt",
     "graphql_jwt.refresh_token",
+    "rest_framework",
+    'adrf'
 ]
 
 INSTALLED_APPS += EXTERNAL_APPS
@@ -179,3 +182,6 @@ OTP_EXPIRATION_MINUTES = env.int("OTP_EXPIRATION_MINUTES")
 SERVER_EMAIL = env("SERVER_EMAIL")
 
 GEMINI_API_KEY = env("GEMINI_API_KEY")
+
+# Unsplash API Configuration
+UNSPLASH_ACCESS_KEY = env("UNSPLASH_ACCESS_KEY")
