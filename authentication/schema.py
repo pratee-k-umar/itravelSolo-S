@@ -3,6 +3,7 @@ import graphql_jwt
 from authentication.graphql.mutation import (
     DisableMFA,
     EnableMFA,
+    FirebaseOAuthLogin,
     LoginUser,
     RegisterUser,
     RequestEmailVerificationOTP,
@@ -25,6 +26,7 @@ class Mutation(graphene.ObjectType):
     # Authentication
     login_user = LoginUser.Field()
     register_user = RegisterUser.Field()
+    firebase_oauth_login = FirebaseOAuthLogin.Field()
 
     # Email Verification
     request_email_verification_otp = RequestEmailVerificationOTP.Field()

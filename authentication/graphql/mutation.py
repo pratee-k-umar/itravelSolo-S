@@ -1,4 +1,8 @@
 import graphene
+from authentication.firebase_auth import (
+    get_or_create_user_from_firebase,
+    verify_firebase_token,
+)
 from authentication.utils import generate_otp, send_otp_email, valid_otp
 from authentication.validators import (
     sanitize_input,
@@ -511,3 +515,77 @@ class DisableMFA(graphene.Mutation):
         user.otp_created_at = None
         user.save()
         return DisableMFA(success=True, message="MFA disabled successfully.", user=user)
+
+
+class FirebaseOAuthLogin(graphene.Mutation):
+    """
+    Authenticate user using Firebase ID token from mobile app.
+    Mobile app authenticates with Firebase/Google, then sends the ID token here.
+    """
+
+    class Arguments:
+        id_token = graphene.String(required=True)
+
+    success = graphene.Boolean()
+    message = graphene.String()
+    token = graphene.String()
+    refresh_token = graphene.String()
+    user = graphene.Field(UserType)
+    is_new_user = graphene.Boolean()
+
+    @classmethod
+    def mutate(cls, root, info, id_token):
+        try:
+            # Verify Firebase token
+            is_valid, result = verify_firebase_token(id_token)
+
+            if not is_valid:
+                return FirebaseOAuthLogin(
+                    success=False,
+                    message=result,  # Error message
+                    token=None,
+                    refresh_token=None,
+                    user=None,
+                    is_new_user=False,
+                )
+
+            # Get or create user from Firebase data
+            user_data = result
+            user, created = get_or_create_user_from_firebase(user_data)
+
+            # Generate JWT tokens
+            token = get_token(user)
+            refresh_token_value = create_refresh_token(user)
+
+            return FirebaseOAuthLogin(
+                success=True,
+                message=(
+                    "Authentication successful."
+                    if not created
+                    else "Account created and authenticated successfully."
+                ),
+                token=token,
+                refresh_token=refresh_token_value,
+                user=user,
+                is_new_user=created,
+            )
+
+        except ValueError as e:
+            return FirebaseOAuthLogin(
+                success=False,
+                message=str(e),
+                token=None,
+                refresh_token=None,
+                user=None,
+                is_new_user=False,
+            )
+
+        except Exception as e:
+            return FirebaseOAuthLogin(
+                success=False,
+                message=f"Authentication error: {str(e)}",
+                token=None,
+                refresh_token=None,
+                user=None,
+                is_new_user=False,
+            )
