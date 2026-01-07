@@ -46,6 +46,20 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
+    # OAuth fields
+    auth_provider = models.CharField(
+        max_length=50,
+        default="email",
+        help_text="Authentication provider: email, google, facebook, apple, etc.",
+    )
+    firebase_uid = models.CharField(
+        max_length=128,
+        blank=True,
+        null=True,
+        unique=True,
+        help_text="Firebase User ID for OAuth users",
+    )
+
     USERNAME_FIELD = "email"
 
     objects = UserManager()
@@ -54,6 +68,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         indexes = [
             models.Index(fields=["email"]),
             models.Index(fields=["is_active", "email_verified"]),
+            models.Index(fields=["firebase_uid"]),
+            models.Index(fields=["auth_provider"]),
         ]
         verbose_name = "User"
         verbose_name_plural = "Users"
@@ -84,7 +100,16 @@ class Profile(models.Model):
     last_location_update = models.DateTimeField(auto_now=True, blank=True, null=True)
     show_location = models.BooleanField(default=True)
     profile_image = models.ImageField(
-        upload_to="profile_images/", null=True, blank=True
+        upload_to="profile_images/",
+        null=True,
+        blank=True,
+        help_text="Uploaded profile image",
+    )
+    profile_image_url = models.URLField(
+        max_length=500,
+        blank=True,
+        null=True,
+        help_text="External profile image URL (e.g., from Google, Facebook)",
     )
     bio = models.TextField(blank=True, null=True)
     address = models.CharField(max_length=255, blank=True, null=True)
@@ -172,6 +197,7 @@ class Favorite(models.Model):
 
     def __str__(self):
         return f"{self.user.email} → {self.name}"
+
 
 class SocialLink(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
