@@ -1,20 +1,8 @@
 import graphene
-import graphql_jwt
 from graphql_jwt.decorators import login_required
 from user.graphql.social_schema import SocialType
-from user.graphql.user_schema import (
-    Disable_MFA,
-    Enable_MFA,
-    LoginUser,
-    RegisterUser,
-    RequestEmailVerificationOTP,
-    RequestMFAEnableOTP,
-    UserType,
-    VerifyEmailOTP,
-    VerifyMFAOTP,
-)
+from user.graphql.user_schema import UserType
 
-from .models import User
 from .graphql.profile_schema import (
     CreateProfile,
     ProfileType,
@@ -22,6 +10,7 @@ from .graphql.profile_schema import (
     UpdateProfile,
 )
 from .graphql.social_link_schema import SocialLinkType
+from .models import User
 
 
 class Query(graphene.ObjectType):
@@ -59,24 +48,6 @@ class Query(graphene.ObjectType):
 
 
 class Mutation(graphene.ObjectType):
-    # JWT Token Management
-    verify_token = graphql_jwt.Verify.Field()
-    refresh_token = graphql_jwt.Refresh.Field()
-
-    # Authentication
-    login_user = LoginUser.Field()
-    register_user = RegisterUser.Field()
-
-    # Email Verification
-    request_email_verification_otp = RequestEmailVerificationOTP.Field()
-    verify_email_otp = VerifyEmailOTP.Field()
-
-    # MFA Management
-    verify_mfa_otp = VerifyMFAOTP.Field()
-    request_mfa_enable_otp = RequestMFAEnableOTP.Field()
-    enable_mfa = Enable_MFA.Field()
-    disable_mfa = Disable_MFA.Field()
-
     # Profile Mutations
     create_profile = CreateProfile.Field()
     update_profile = UpdateProfile.Field()

@@ -1,24 +1,6 @@
 import graphene
-from django.conf import settings
-from django.utils import timezone
 from graphene_django import DjangoObjectType
-from graphql_jwt.decorators import login_required
-from graphql_jwt.shortcuts import create_refresh_token, get_token
 from user.models import Profile, User
-from user.utils import generate_otp, send_otp_email, valid_otp
-from user.validators import (
-    sanitize_input,
-    validate_email,
-    validate_name,
-    validate_password,
-)
-
-
-class RegisterUserInput(graphene.InputObjectType):
-    first_name = graphene.String(required=True)
-    last_name = graphene.String(required=True)
-    email = graphene.String(required=True)
-    password = graphene.String(required=True)
 
 
 class UserType(DjangoObjectType):
@@ -37,111 +19,30 @@ class UserType(DjangoObjectType):
         except Profile.DoesNotExist:
             return None
 
+        message="Please wait before requesting a new OTP.",
+            errors=["OTP request cooldown in effect."],
+        )
 
-class RegisterUser(graphene.Mutation):
-    class Arguments:
-        input = RegisterUserInput(required=True)
+        otp = generate_otp()
+        user.otp_secret = otp
+        user.otp_created_at = timezone.now()
+        user.save()
 
-    user = graphene.Field(UserType)
-    success = graphene.Boolean()
-    message = graphene.String()
-    errors = graphene.List(graphene.String)
-
-    @classmethod
-    def mutate(cls, root, info, input):
-        try:
-            # Sanitize and validate inputs
-            email = sanitize_input(input.email).lower()
-            first_name = sanitize_input(input.first_name)
-            last_name = sanitize_input(input.last_name)
-
-            # Validate email
-            is_valid_email, email_error = validate_email(email)
-            if not is_valid_email:
-                return RegisterUser(
-                    user=None,
-                    success=False,
-                    message=email_error,
-                    errors=[email_error],
-                )
-
-            # Validate names
-            is_valid_first, first_error = validate_name(first_name, "First name")
-            if not is_valid_first:
-                return RegisterUser(
-                    user=None,
-                    success=False,
-                    message=first_error,
-                    errors=[first_error],
-                )
-
-            is_valid_last, last_error = validate_name(last_name, "Last name")
-            if not is_valid_last:
-                return RegisterUser(
-                    user=None,
-                    success=False,
-                    message=last_error,
-                    errors=[last_error],
-                )
-
-            # Validate password
-            is_valid_pwd, pwd_error = validate_password(input.password)
-            if not is_valid_pwd:
-                return RegisterUser(
-                    user=None,
-                    success=False,
-                    message=pwd_error,
-                    errors=[pwd_error],
-                )
-
-            # Check if user already exists
-            if User.objects.filter(email=email).exists():
-                return RegisterUser(
-                    user=None,
-                    success=False,
-                    message="User with this email already exists.",
-                    errors=["Email already registered."],
-                )
-
-            user = User.objects.create_user(
-                first_name=first_name,
-                last_name=last_name,
-                email=email,
-                password=input.password,
+        if send_otp_email(user, otp, subject="Email Verification OTP"):
+            return RegisterUser(
+                user=user,
+                success=True,
+                message="User registered successfully. OTP sent to your email for verification.",
+                errors=None,
             )
-
-            if (
-                user.otp_created_at
-                and (timezone.now() - user.otp_created_at).total_seconds()
-                < settings.OTP_COOLDOWN_SECONDS
-            ):
-                return RegisterUser(
-                    user=None,
-                    success=False,
-                    message="Please wait before requesting a new OTP.",
-                    errors=["OTP request cooldown in effect."],
-                )
-
-            otp = generate_otp()
-            user.otp_secret = otp
-            user.otp_created_at = timezone.now()
-            user.save()
-
-            if send_otp_email(user, otp, subject="Email Verification OTP"):
-                return RegisterUser(
-                    user=user,
-                    success=True,
-                    message="User registered successfully. OTP sent to your email for verification.",
-                    errors=None,
-                )
-            else:
-                return RegisterUser(
-                    user=user,
-                    success=False,
-                    message="User registered, but failed to send OTP email.",
-                    errors=["Failed to send OTP email."],
-                )
-            # return RegisterUser(user=user, success=True, errors=None)
+        else:
+            return RegisterUser(
+                user=user,
+                success=False,
+                message="User registered, but failed to send OTP email.",
+                errors=["Failed to send OTP email."],
+            )
+        # return RegisterUser(user=user, success=True, errors=None)
         except Exception as e:
             return RegisterUser(user=None, success=False, errors=[str(e)])
 
