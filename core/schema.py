@@ -1,19 +1,28 @@
+import account.schema
+import authentication.schema
 import graphene
-import user.schema
 import insights.schema
+import user.schema
 
-class Query (
-  user.schema.Query,
-  insights.schema.Query,
-  graphene.ObjectType
+
+class Query(
+    authentication.schema.Query,
+    user.schema.Query,
+    account.schema.Query,
+    insights.schema.Query,
+    graphene.ObjectType,
 ):
-  pass
+    pass
+
 
 class Mutation(
-  user.schema.Mutation,
-  insights.schema.Mutation,
-  graphene.ObjectType
+    authentication.schema.Mutation,
+    user.schema.Mutation,
+    account.schema.Mutation,
+    insights.schema.Mutation,
+    graphene.ObjectType,
 ):
-  pass
+    pass
+
 
 schema = graphene.Schema(query=Query, mutation=Mutation)

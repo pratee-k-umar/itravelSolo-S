@@ -51,14 +51,16 @@ INSTALLED_APPS = [
 ]
 
 EXTERNAL_APPS = [
+    "authentication",
     "user",
+    "account",
     "travel",
     "insights",
     "graphene_django",
     "graphql_jwt",
     "graphql_jwt.refresh_token",
     "rest_framework",
-    'adrf'
+    "adrf",
 ]
 
 INSTALLED_APPS += EXTERNAL_APPS
@@ -102,7 +104,7 @@ GRAPHENE = {
 }
 
 GRAPHQL_JWT = {
-    "JWT_PAYLOAD_GET_USERNAME_HANDLER": "user.utils.get_email_from_payload_handler",
+    "JWT_PAYLOAD_GET_USERNAME_HANDLER": "authentication.utils.get_email_from_payload_handler",
     "JWT_AUTH_HEADER_PREFIX": "Bearer",
 }
 
@@ -185,3 +187,7 @@ GEMINI_API_KEY = env("GEMINI_API_KEY")
 
 # Unsplash API Configuration
 UNSPLASH_ACCESS_KEY = env("UNSPLASH_ACCESS_KEY")
+
+# Firebase Configuration (optional - for service account file path)
+# If not set, Firebase Admin SDK will use application default credentials
+FIREBASE_SERVICE_ACCOUNT_KEY = env("FIREBASE_SERVICE_ACCOUNT_KEY", default=None)
