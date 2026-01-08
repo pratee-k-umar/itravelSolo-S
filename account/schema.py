@@ -1,18 +1,19 @@
 import graphene
-from account.graphql.profile_mutations import (
-    DeleteProfileImage,
-    UpdateLocation,
-    UpdateProfile,
-    UploadProfileImage,
-)
-from account.graphql.queries import AccountQueries
-from account.graphql.social_mutations import (
-    AddFriend,
+from account.graphql.mutations import (  # Profile mutations; Social link mutations; Friend request mutations
+    AcceptFriendRequest,
     AddSocialLink,
+    CancelFriendRequest,
+    DeclineFriendRequest,
+    DeleteProfileImage,
     DeleteSocialLink,
     RemoveFriend,
+    SendFriendRequest,
+    UpdateLocation,
+    UpdateProfile,
+    UpdateProfileImage,
     UpdateSocialLink,
 )
+from account.graphql.queries import AccountQueries
 
 
 class Query(AccountQueries, graphene.ObjectType):
@@ -31,7 +32,7 @@ class Mutation(graphene.ObjectType):
     # Profile Management
     update_profile = UpdateProfile.Field()
     update_location = UpdateLocation.Field()
-    upload_profile_image = UploadProfileImage.Field()
+    update_profile_image = UpdateProfileImage.Field()
     delete_profile_image = DeleteProfileImage.Field()
 
     # Social Link Management
@@ -39,6 +40,9 @@ class Mutation(graphene.ObjectType):
     update_social_link = UpdateSocialLink.Field()
     delete_social_link = DeleteSocialLink.Field()
 
-    # Friend Management
-    add_friend = AddFriend.Field()
+    # Friend Request System
+    send_friend_request = SendFriendRequest.Field()
+    accept_friend_request = AcceptFriendRequest.Field()
+    decline_friend_request = DeclineFriendRequest.Field()
+    cancel_friend_request = CancelFriendRequest.Field()
     remove_friend = RemoveFriend.Field()
