@@ -1,10 +1,10 @@
 import graphene
-from authentication.firebase_auth import (
+from authentication.helpers.firebase_auth import (
     get_or_create_user_from_firebase,
     verify_firebase_token,
 )
-from authentication.utils import generate_otp, send_otp_email, valid_otp
-from authentication.validators import (
+from authentication.helpers.utils import generate_otp, send_otp_email, valid_otp
+from authentication.helpers.validators import (
     sanitize_input,
     validate_email,
     validate_name,
@@ -13,7 +13,7 @@ from authentication.validators import (
 from django.conf import settings
 from django.utils import timezone
 from graphql_jwt.shortcuts import create_refresh_token, get_token
-from user.graphql.user_schema import UserType
+from user.graphql.types import UserType
 from user.models import User
 
 
