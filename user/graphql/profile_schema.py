@@ -7,11 +7,7 @@ from user.models import Profile
 class ProfileType(DjangoObjectType):
     class Meta:
         model = Profile
-        exclude = (
-            "user",
-            "latitude",
-            "longitude",
-        )
+        exclude = ("user",)
 
 
 class ProfileCRUDType(graphene.InputObjectType):
@@ -78,34 +74,36 @@ class UpdateProfile(graphene.Mutation):
             )
 
 
+class UpdateLocationInput(graphene.InputObjectType):
+    latitude = graphene.Decimal(required=True)
+    longitude = graphene.Decimal(required=True)
+    show_location = graphene.Boolean()
+
+
 class UpdateLocation(graphene.Mutation):
     class Arguments:
-        latitude = graphene.Decimal(required=True)
-        longitude = graphene.Decimal(required=True)
-        show_location = graphene.Boolean(required=True)
+        input = UpdateLocationInput(required=True)
 
     success = graphene.Boolean()
     message = graphene.String()
     profile = graphene.Field(lambda: ProfileType)
 
     @login_required
-    def mutate(cls, info, latitude=None, longitude=None, show_location=None):
+    def mutate(cls, info, input):
+        from django.utils import timezone
+
         user = info.context.user
         try:
             profile = user.profile
 
-            updated = False
-            if latitude is not None:
-                profile.latitude = latitude
-                profile.longitude = longitude
-                updated = True
+            profile.latitude = input.latitude
+            profile.longitude = input.longitude
+            profile.last_location_update = timezone.now()
 
-            if show_location is not None:
-                profile.show_location = show_location
-                updated = True
+            if input.show_location is not None:
+                profile.show_location = input.show_location
 
-            if updated:
-                profile.save()
+            profile.save()
 
             return UpdateLocation(
                 success=True, message="Location updated successfully.", profile=profile

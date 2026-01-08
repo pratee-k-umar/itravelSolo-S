@@ -97,19 +97,13 @@ class Profile(models.Model):
     longitude = models.DecimalField(
         max_digits=9, decimal_places=6, blank=True, null=True
     )
-    last_location_update = models.DateTimeField(auto_now=True, blank=True, null=True)
+    last_location_update = models.DateTimeField(blank=True, null=True)
     show_location = models.BooleanField(default=True)
-    profile_image = models.ImageField(
-        upload_to="profile_images/",
-        null=True,
-        blank=True,
-        help_text="Uploaded profile image",
-    )
     profile_image_url = models.URLField(
         max_length=500,
         blank=True,
         null=True,
-        help_text="External profile image URL (e.g., from Google, Facebook)",
+        help_text="Profile image URL (uploaded or from OAuth provider like Google)",
     )
     bio = models.TextField(blank=True, null=True)
     address = models.CharField(max_length=255, blank=True, null=True)
