@@ -157,7 +157,7 @@ class Social(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="social"
     )
     friends = models.ManyToManyField(
-        settings.AUTH_USER_MODEL, blank=True, related_name="friends"
+        settings.AUTH_USER_MODEL, blank=True, related_name="friend_of"
     )
     adventures = models.PositiveIntegerField(default=0)
     favorites = models.PositiveIntegerField(default=0)
@@ -170,6 +170,42 @@ class Social(models.Model):
 
     class Meta:
         verbose_name_plural = "Social Info"
+
+
+class FriendRequest(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("accepted", "Accepted"),
+        ("rejected", "Rejected"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    from_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="sent_friend_requests",
+    )
+    to_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="received_friend_requests",
+    )
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("from_user", "to_user")
+        indexes = [
+            models.Index(fields=["from_user", "status"]),
+            models.Index(fields=["to_user", "status"]),
+            models.Index(fields=["status", "created_at"]),
+        ]
+        verbose_name = "Friend Request"
+        verbose_name_plural = "Friend Requests"
+
+    def __str__(self):
+        return f"{self.from_user.email} → {self.to_user.email} ({self.status})"
 
 
 class Favorite(models.Model):

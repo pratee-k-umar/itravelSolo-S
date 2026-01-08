@@ -1,21 +1,20 @@
+"""
+GraphQL Mutations for User app
+All mutation definitions for user operations
+"""
+
 import graphene
-from graphene_django import DjangoObjectType
+from django.utils import timezone
 from graphql_jwt.decorators import login_required
+from user.graphql.types import ProfileType
 from user.models import Profile
 
 
-class ProfileType(DjangoObjectType):
-    class Meta:
-        model = Profile
-        exclude = ("user",)
-
-
 class ProfileCRUDType(graphene.InputObjectType):
-    profile_image = graphene.String()
+    """Input type for profile CRUD operations"""
+
     bio = graphene.String()
-    address = graphene.String()
-    phone_number = graphene.String()
-    profession = graphene.String()
+    profile_image_url = graphene.String()
     gender = graphene.String()
     date_of_birth = graphene.Date()
 
@@ -90,8 +89,6 @@ class UpdateLocation(graphene.Mutation):
 
     @login_required
     def mutate(cls, info, input):
-        from django.utils import timezone
-
         user = info.context.user
         try:
             profile = user.profile
