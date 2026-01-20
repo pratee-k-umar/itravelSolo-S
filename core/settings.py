@@ -104,7 +104,7 @@ GRAPHENE = {
 }
 
 GRAPHQL_JWT = {
-    "JWT_PAYLOAD_GET_USERNAME_HANDLER": "authentication.utils.get_email_from_payload_handler",
+    "JWT_PAYLOAD_GET_USERNAME_HANDLER": "authentication.helpers.utils.get_email_from_payload_handler",
     "JWT_AUTH_HEADER_PREFIX": "Bearer",
 }
 
@@ -191,3 +191,14 @@ UNSPLASH_ACCESS_KEY = env("UNSPLASH_ACCESS_KEY")
 # Firebase Configuration (optional - for service account file path)
 # If not set, Firebase Admin SDK will use application default credentials
 FIREBASE_SERVICE_ACCOUNT_KEY = env("FIREBASE_SERVICE_ACCOUNT_KEY", default=None)
+
+# Hotspot Detection Settings
+HOTSPOT_MIN_USERS = env.int(
+    "HOTSPOT_MIN_USERS", default=2
+)  # 2 for dev, 5-8 for production
+HOTSPOT_CLUSTER_RADIUS_KM = env.float("HOTSPOT_CLUSTER_RADIUS_KM", default=0.1)
+HOTSPOT_NOTIFICATION_RADIUS_KM = env.float(
+    "HOTSPOT_NOTIFICATION_RADIUS_KM", default=1.5
+)
+HOTSPOT_ACTIVITY_WINDOW_MINUTES = env.int("HOTSPOT_ACTIVITY_WINDOW_MINUTES", default=30)
+HOTSPOT_EXPIRY_MINUTES = env.int("HOTSPOT_EXPIRY_MINUTES", default=60)
